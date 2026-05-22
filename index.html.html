@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>육아기 근로지원 관리 시스템</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222535;
+  --border: #2e3347;
+  --accent: #6c8cff;
+  --accent2: #ff7eb3;
+  --accent3: #4ecdc4;
+  --accent4: #ffd166;
+  --text: #e8eaf0;
+  --text2: #8b90a7;
+  --text3: #5a5f73;
+  --danger: #ff5c5c;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --radius: 12px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Pretendard', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 배경 그라디언트 */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at 20% 20%, rgba(108,140,255,0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 80%, rgba(78,205,196,0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 헤더 */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15,17,23,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.logo-text {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.logo-text span {
+  color: var(--accent);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: #5a7aff; transform: translateY(-1px); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-danger {
+  background: rgba(255,92,92,0.15);
+  color: var(--danger);
+  border: 1px solid rgba(255,92,92,0.3);
+}
+.btn-danger:hover { background: rgba(255,92,92,0.25); }
+
+.btn-success {
+  background: rgba(74,222,128,0.15);
+  color: var(--success);
+  border: 1px solid rgba(74,222,128,0.3);
+}
+.btn-success:hover { background: rgba(74,222,128,0.25); }
+
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+/* 탭 */
+.tabs {
+  display: flex;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: relative;
+  z-index: 1;
+}
+
+.tab {
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab:hover { color: var(--text2); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+/* 메인 컨테이너 */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+/* 페이지 패널 */
+.page { display: none; }
+.page.active { display: block; }
+
+/* 통계 카드 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.stat-card:hover { border-color: var(--accent); }
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+.stat-card.blue::before  { background: var(--accent); }
+.stat-card.pink::before  { background: var(--accent2); }
+.stat-card.teal::before  { background: var(--accent3); }
+.stat-card.yellow::before{ background: var(--accent4); }
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text3);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  line-height: 1;
+}
+.stat-card.blue  .stat-value { color: var(--accent); }
+.stat-card.pink  .stat-value { color: var(--accent2); }
+.stat-card.teal  .stat-value { color: var(--accent3); }
+.stat-card.yellow.stat-value { color: var(--accent4); }
+
+.stat-sub {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 6px;
+}
+
+/* 섹션 헤더 */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* 테이블 */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  background: var(--surface2);
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody td {
+  padding: 14px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(108,140,255,0.04); }
+
+/* 뱃지 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-blue    { background: rgba(108,140,255,0.15); color: var(--accent); }
+.badge-pink    { background: rgba(255,126,179,0.15); color: var(--accent2); }
+.badge-teal    { background: rgba(78,205,196,0.15);  color: var(--accent3); }
+.badge-yellow  { background: rgba(255,209,102,0.15); color: var(--accent4); }
+.badge-success { background: rgba(74,222,128,0.15);  color: var(--success); }
+.badge-danger  { background: rgba(255,92,92,0.15);   color: var(--danger); }
+.badge-gray    { background: rgba(139,144,167,0.15); color: var(--text2); }
+
+/* D-Day */
+.dday {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+.dday.near   { color: var(--danger); }
+.dday.soon   { color: var(--warning); }
+.dday.normal { color: var(--accent3); }
+.dday.past   { color: var(--text3); }
+
+/* 모달 */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.show { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 폼 */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.form-grid.full { grid-template-columns: 1fr; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.span2 { grid-column: span 2; }
+
+label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+input, select, textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: 'Pretendard', sans-serif;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+select option { background: var(--surface2); }
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* 급여 계산기 */
+.calc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 20px;
+}
+
+.calc-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--accent);
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.calc-result {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.calc-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.calc-result-item:last-child { border-bottom: none; }
+.calc-result-label { color: var(--text2); }
+.calc-result-value { font-weight: 700; font-family: 'Space Mono', monospace; }
+.calc-result-value.highlight { color: var(--accent); font-size: 18px; }
+
+/* 거부사유 체크 */
+.check-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.check-header {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.check-list { display: flex; flex-direction: column; gap: 10px; }
+
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.check-item:hover { border-color: var(--accent3); }
+.check-item.selected { border-color: var(--accent3); background: rgba(78,205,196,0.05); }
+
+.check-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  accent-color: var(--accent3);
+}
+
+.check-item-content { flex: 1; }
+.check-item-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.check-item-desc  { font-size: 12px; color: var(--text3); line-height: 1.5; }
+
+.result-banner {
+  padding: 16px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 20px;
+  display: none;
+  align-items: center;
+  gap: 10px;
+}
+.result-banner.allow  { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--success); }
+.result-banner.deny   { background: rgba(255,92,92,0.1);  border: 1px solid rgba(255,92,92,0.3);  color: var(--danger); }
+.result-banner.show { display: flex; }
+
+/* 토스트 */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 2000;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s;
+  box-shadow: var(--shadow);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: rgba(74,222,128,0.4); color: var(--success); }
+.toast.error   { border-color: rgba(255,92,92,0.4);  color: var(--danger); }
+
+/* 빈 상태 */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text3);
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state .title { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text2); }
+.empty-state .desc  { font-size: 14px; }
+
+/* 필터 바 */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  transition: all 0.2s;
+}
+.filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.filter-btn:hover  { border-color: var(--accent); color: var(--accent); }
+
+/* 프로그레스바 */
+.progress-wrap { margin-top: 4px; }
+.progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+.progress-label {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 3px;
+}
+
+@media (max-width: 1024px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .calc-grid  { grid-template-columns: 1fr 1fr; }
+}
+
+/* 엑셀 버튼 영역 */
+.excel-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.excel-bar-label {
+  font-size: 12px;
+  color: var(--text3);
+  font-weight: 600;
+  margin-right: 4px;
+}
+.btn-excel-down { background: rgba(74,222,128,0.15); color: var(--success); border: 1px solid rgba(74,222,128,0.3); }
+.btn-excel-down:hover { background: rgba(74,222,128,0.25); }
+.btn-excel-up { background: rgba(108,140,255,0.15); color: var(--accent); border: 1px solid rgba(108,140,255,0.3); }
+.btn-excel-up:hover { background: rgba(108,140,255,0.25); }
+.btn-excel-tmpl { background: rgba(255,209,102,0.15); color: var(--accent4); border: 1px solid rgba(255,209,102,0.3); }
+.btn-excel-tmpl:hover { background: rgba(255,209,102,0.25); }
+#excel-upload-input { display: none; }
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">👶</div>
+    <div class="logo-text"><span>육아기</span> 근로지원 관리 시스템</div>
+  </div>
+  <div class="header-right">
+    <span style="font-size:12px;color:var(--text3);font-family:'Space Mono',monospace" id="today-date"></span>
+    <button class="btn btn-primary" onclick="openModal('add')">+ 직원 등록</button>
+  </div>
+</header>
+
+<!-- 탭 -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('dashboard', this)">📊 현황 대시보드</div>
+  <div class="tab" onclick="switchTab('salary', this)">💰 급여 계산기</div>
+  <div class="tab" onclick="switchTab('refuse', this)">⚖️ 거부 사유 검토</div>
+</div>
+
+<!-- 메인 -->
+<div class="container">
+
+  <!-- ① 대시보드 탭 -->
+  <div id="tab-dashboard" class="page active">
+
+    <!-- 통계 -->
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-label">전체 대상자</div>
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-sub">육아기 지원 직원</div>
+      </div>
+      <div class="stat-card pink">
+        <div class="stat-label">육아휴직</div>
+        <div class="stat-value" id="stat-leave">0</div>
+        <div class="stat-sub">현재 휴직 중</div>
+      </div>
+      <div class="stat-card teal">
+        <div class="stat-label">단축근로</div>
+        <div class="stat-value" id="stat-short">0</div>
+        <div class="stat-sub">현재 단축 중</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="stat-label">30일 내 복직</div>
+        <div class="stat-value" id="stat-return">0</div>
+        <div class="stat-sub">복직 예정자</div>
+      </div>
+    </div>
+
+
+    <!-- 엑셀 바 -->
+    <div class="excel-bar">
+      <span class="excel-bar-label">📊 엑셀</span>
+      <button class="btn btn-excel-down" onclick="downloadExcel()">⬇ 현황 다운로드</button>
+      <button class="btn btn-excel-tmpl" onclick="downloadTemplate()">📋 양식 다운로드</button>
+      <button class="btn btn-excel-up" onclick="document.getElementById('excel-upload-input').click()">⬆ 엑셀 업로드</button>
+      <input type="file" id="excel-upload-input" accept=".xlsx,.xls" onchange="uploadExcel(this)">
+      <span style="font-size:11px;color:var(--text3);margin-left:4px">※ 업로드 시 기존 데이터에 추가됩니다</span>
+    </div>
+
+    <!-- 필터 -->
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterTable('all', this)">전체</button>
+      <button class="filter-btn" onclick="filterTable('육아휴직', this)">육아휴직</button>
+      <button class="filter-btn" onclick="filterTable('단축근로', this)">단축근로</button>
+      <button class="filter-btn" onclick="filterTable('복직완료', this)">복직완료</button>
+    </div>
+
+    <!-- 직원 목록 테이블 -->
+    <div class="section-header">
+      <div class="section-title">직원 현황</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>성명</th>
+            <th>부서</th>
+            <th>유형</th>
+            <th>시작일</th>
+            <th>종료 예정일</th>
+            <th>D-Day</th>
+            <th>사용 기간</th>
+            <th>자녀 나이</th>
+            <th>급여 현황</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="employee-table">
+          <tr>
+            <td colspan="10">
+              <div class="empty-state">
+                <div class="icon">👶</div>
+                <div class="title">등록된 직원이 없습니다</div>
+                <div class="desc">우측 상단 [+ 직원 등록] 버튼으로 추가하세요</div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ② 급여 계산기 탭 -->
+  <div id="tab-salary" class="page">
+    <div class="section-header" style="margin-bottom:20px">
+      <div class="section-title">단축근로 급여 계산기</div>
+    </div>
+
+    <div class="calc-card">
+      <div class="calc-title">⏰ 육아기 단축근무 급여 계산</div>
+      <div class="calc-grid">
+        <div class="form-group">
+          <label>통상임금 (월)</label>
+          <input type="number" id="c-wage" placeholder="예: 3000000" oninput="calcSalary()">
+        </div>
+        <div class="form-group">
+          <label>소정근로시간 (주)</label>
+          <select id="c-normal" onchange="calcSalary()">
+            <option value="40">40시간 (법정)</option>
+            <option value="35">35시간</option>
+            <option value="44">44시간</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>단축 후 근로시간 (주)</label>
+          <input type="number" id="c-short" placeholder="예: 30" min="15" max="35" oninput="calcSalary()">
+        </div>
+        <div class="form-group">
+          <label>적용 유형</label>
+          <select id="c-type" onchange="calcSalary()">
+            <option value="reduce">육아기 단축근로</option>
+            <option value="leave">육아휴직</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>자녀 나이</label>
+          <select id="c-age" onchange="calcSalary()">
+            <option value="0">0세 (12개월 미만)</option>
+            <option value="1">1세</option>
+            <option value="2">2세</option>
+            <option value="3">3세</option>
+            <option value="4">4세</option>
+            <option value="5">5세</option>
+            <option value="6">6세</option>
+            <option value="7">7세 이상 (8세 이하)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>사용 월차</label>
+          <input type="number" id="c-month" placeholder="예: 3" min="1" max="24" oninput="calcSalary()">
+        </div>
+      </div>
+
+      <div class="calc-result" id="calc-result" style="display:none">
+        <div class="calc-result-item">
+          <span class="calc-result-label">단축 비율</span>
+          <span class="calc-result-value" id="r-ratio">-</span>
+        </div>
+        <div class="calc-result-item">
+          <span class="calc-result-label">실 근무 시간 (주)</span>
+          <span class="calc-result-value" id="r-hours">-</span>
+        </div>
+        <div class="calc-result-item">
+          <span class="calc-result-label">기본급 삭감액</span>
+          <span class="calc-result-value" style="color:var(--danger)" id="r-cut">-</span>
+        </div>
+        <div class="calc-result-item">
+          <span class="calc-result-label">고용보험 급여 (예상)</span>
+          <span class="calc-result-value" style="color:var(--accent4)" id="r-insurance">-</span>
+        </div>
+        <div class="calc-result-item">
+          <span class="calc-result-label" style="font-weight:700;color:var(--text)">실 수령 예상액 (월)</span>
+          <span class="calc-result-value highlight" id="r-total">-</span>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:14px 16px;background:rgba(108,140,255,0.08);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.8">
+        📌 <strong>고용보험 급여 기준</strong><br>
+        · 육아휴직: 통상임금의 80% (상한 150만원 / 하한 70만원), 단 6+6 특례 시 첫 3개월 200만원 상한<br>
+        · 육아기 단축근로: 단축 전 5시간까지 통상임금 100%, 초과분 80% (상한 150만원)<br>
+        · 위 계산은 참고용이며 실제 지급액은 고용보험 기준에 따라 달라질 수 있습니다
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 거부 사유 검토 탭 -->
+  <div id="tab-refuse" class="page">
+    <div class="section-header" style="margin-bottom:20px">
+      <div class="section-title">사업주 거부 사유 적법성 검토</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+      <!-- 허용 거부 사유 -->
+      <div class="check-card">
+        <div class="check-header">
+          <span style="color:var(--success)">✅</span>
+          허용 거부 사유 <span style="font-size:12px;color:var(--text3);font-weight:400">(법 제19조의2)</span>
+        </div>
+        <div class="check-list" id="allow-list">
+          <label class="check-item">
+            <input type="checkbox" onchange="checkResult()">
+            <div class="check-item-content">
+              <div class="check-item-title">계속 근무기간 6개월 미만</div>
+              <div class="check-item-desc">해당 사업장에서 계속 근무한 기간이 6개월 미만인 경우</div>
+            </div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" onchange="checkResult()">
+            <div class="check-item-content">
+              <div class="check-item-title">업무 특성상 대체인력 확보 불가</div>
+              <div class="check-item-desc">업무 성질상 단축이 불가하고 대체인력 채용이 불가능함을 증명한 경우</div>
+            </div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" onchange="checkResult()">
+            <div class="check-item-content">
+              <div class="check-item-title">정상적 사업 운영 심각한 지장</div>
+              <div class="check-item-desc">단축근로 허용 시 정상적인 사업 운영에 중대한 지장을 초래하는 경우 (객관적 입증 필요)</div>
+            </div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" onchange="checkResult()">
+            <div class="check-item-content">
+              <div class="check-item-title">합의에 의한 육아기 이외 사용</div>
+              <div class="check-item-desc">근로자가 육아기 단축근로 대신 다른 형태의 근무를 요청한 경우</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- 불허 거부 사유 -->
+      <div class="check-card">
+        <div class="check-header">
+          <span style="color:var(--danger)">❌</span>
+          불허 거부 사유 (위반 시 과태료)
+        </div>
+        <div class="check-list" id="deny-list">
+          <label class="check-item">
+            <input type="checkbox" onchange="checkResult()">
+            <div class="check-item-content">
+              <div class="check-item-title">업무 바쁨 / 인력 부족</div>
+              <div class="check-item-desc">단순히 업무량이 많거나 인력이 부족하다는 사유는 거부 불가</div>
+            </div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" onchange="checkResult()">
+            <div class="check-item-content">
+              <div class="check-item-title">같은 팀 사용자 존재</div>
+              <div class="check-item-desc">동일 부서·팀에 이미 육아기 지원 사용자가 있다는 사유 불가</div>
+            </div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" onchange="checkResult()">
+            <div class="check-item-content">
+              <div class="check-item-title">대체인력 채용 비용 부담</div>
+              <div class="check-item-desc">비용 부담을 이유로 한 거부는 불법 — 고용장려금 활용 가능</div>
+            </div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" onchange="checkResult()">
+            <div class="check-item-content">
+              <div class="check-item-title">임신 중 / 출산 후 1년 이내 거부</div>
+              <div class="check-item-desc">임신 중이거나 출산 후 1년 이내 근로자에 대한 거부는 절대 불가</div>
+            </div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" onchange="checkResult()">
+            <div class="check-item-content">
+              <div class="check-item-title">불이익 처우 / 해고 위협</div>
+              <div class="check-item-desc">신청을 이유로 해고·불이익 처우는 형사처벌 대상 (3년 이하 징역)</div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 판단 결과 -->
+    <div class="result-banner allow" id="result-allow">
+      ✅ 선택한 사유는 <strong>법적으로 허용 가능한 거부 사유</strong>입니다. 단, 객관적 증빙자료를 반드시 확보하세요.
+    </div>
+    <div class="result-banner deny" id="result-deny">
+      ❌ 선택한 사유는 <strong>불법 거부 사유</strong>를 포함합니다. 과태료(500만원) 또는 형사처벌 대상이 될 수 있습니다.
+    </div>
+
+    <div style="margin-top:20px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--text2);line-height:1.8">
+      ⚖️ <strong>관련 법령</strong>: 남녀고용평등법 제19조(육아휴직), 제19조의2(육아기 근로시간 단축), 제19조의3~5 / 
+      위반 시 제재: 거부 500만원 이하 과태료 / 불이익 처우 3년 이하 징역 또는 3천만원 이하 벌금
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- 직원 등록/수정 모달 -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modal-icon">👶</span>
+      <span id="modal-title-text">직원 등록</span>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>성명 *</label>
+        <input type="text" id="f-name" placeholder="홍길동">
+      </div>
+      <div class="form-group">
+        <label>부서 *</label>
+        <input type="text" id="f-dept" placeholder="인사팀">
+      </div>
+      <div class="form-group">
+        <label>지원 유형 *</label>
+        <select id="f-type">
+          <option value="육아휴직">육아휴직</option>
+          <option value="단축근로">육아기 단축근로</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>자녀 나이</label>
+        <select id="f-age">
+          <option value="0세">0세</option>
+          <option value="1세">1세</option>
+          <option value="2세">2세</option>
+          <option value="3세">3세</option>
+          <option value="4세">4세</option>
+          <option value="5세">5세</option>
+          <option value="6세">6세</option>
+          <option value="7세">7세</option>
+          <option value="8세">8세</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>시작일 *</label>
+        <input type="date" id="f-start">
+      </div>
+      <div class="form-group">
+        <label>종료 예정일 *</label>
+        <input type="date" id="f-end">
+      </div>
+      <div class="form-group">
+        <label>통상임금 (월)</label>
+        <input type="number" id="f-wage" placeholder="3000000">
+      </div>
+      <div class="form-group">
+        <label>단축 시간 (주, 단축근로만)</label>
+        <input type="number" id="f-hours" placeholder="30" min="15" max="35">
+      </div>
+      <div class="form-group span2">
+        <label>메모</label>
+        <input type="text" id="f-memo" placeholder="특이사항 입력">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 데이터 ──
+let employees = JSON.parse(localStorage.getItem('hr_employees') || '[]');
+let editIdx = -1;
+let currentFilter = 'all';
+
+// 샘플 데이터 (처음 접속 시)
+if (employees.length === 0) {
+  employees = [
+    { name:'김지영', dept:'개발팀', type:'육아휴직', age:'1세', start:'2025-03-01', end:'2025-12-31', wage:3500000, hours:0, memo:'첫째 아이', status:'육아휴직' },
+    { name:'이수민', dept:'마케팅팀', type:'단축근로', age:'3세', start:'2025-06-01', end:'2025-11-30', wage:2800000, hours:30, memo:'주 30시간 근무', status:'단축근로' },
+    { name:'박현우', dept:'인사팀', type:'단축근로', age:'0세', start:'2025-09-01', end:'2026-02-28', wage:3200000, hours:25, memo:'', status:'단축근로' },
+    { name:'최민서', dept:'영업팀', type:'육아휴직', age:'2세', start:'2024-10-01', end:'2025-06-30', wage:3000000, hours:0, memo:'복직 예정', status:'복직완료' },
+  ];
+  save();
+}
+
+function save() {
+  localStorage.setItem('hr_employees', JSON.stringify(employees));
+}
+
+// ── 날짜 유틸 ──
+function today() { return new Date(); }
+
+function dDay(dateStr) {
+  const end = new Date(dateStr);
+  const now = today();
+  const diff = Math.ceil((end - now) / (1000*60*60*24));
+  return diff;
+}
+
+function formatDate(d) {
+  if (!d) return '-';
+  return d.replace(/-/g, '.');
+}
+
+function usedDays(start, end) {
+  const s = new Date(start), e = new Date(end < today().toISOString().slice(0,10) ? end : today().toISOString().slice(0,10));
+  return Math.max(0, Math.ceil((e-s)/(1000*60*60*24)));
+}
+
+function totalDays(start, end) {
+  const s = new Date(start), e = new Date(end);
+  return Math.ceil((e-s)/(1000*60*60*24));
+}
+
+// ── 탭 ──
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+// ── 필터 ──
+function filterTable(type, el) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = type;
+  renderTable();
+}
+
+// ── 렌더 ──
+function render() {
+  renderStats();
+  renderTable();
+}
+
+function renderStats() {
+  const now = today();
+  const total = employees.length;
+  const leave = employees.filter(e=>e.type==='육아휴직' && e.status !== '복직완료').length;
+  const short = employees.filter(e=>e.type==='단축근로' && e.status !== '복직완료').length;
+  const ret   = employees.filter(e=>{
+    const d = dDay(e.end);
+    return d >= 0 && d <= 30 && e.status !== '복직완료';
+  }).length;
+
+  document.getElementById('stat-total').textContent  = total;
+  document.getElementById('stat-leave').textContent  = leave;
+  document.getElementById('stat-short').textContent  = short;
+  document.getElementById('stat-return').textContent = ret;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('employee-table');
+  const list = currentFilter === 'all'
+    ? employees
+    : employees.filter(e => (e.status || e.type) === currentFilter);
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10">
+      <div class="empty-state">
+        <div class="icon">👶</div>
+        <div class="title">해당 조건의 직원이 없습니다</div>
+        <div class="desc">필터를 변경하거나 직원을 등록하세요</div>
+      </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map((e, i) => {
+    const realIdx = employees.indexOf(e);
+    const dd = dDay(e.end);
+    const status = e.status || e.type;
+    const used = usedDays(e.start, e.end);
+    const total = totalDays(e.start, e.end);
+    const pct = Math.min(100, Math.round(used/total*100));
+
+    let ddClass = 'normal', ddText = '';
+    if (status === '복직완료') {
+      ddText = '<span class="dday past">복직완료</span>';
+    } else if (dd < 0) {
+      ddText = '<span class="dday past">D+'+Math.abs(dd)+'</span>';
+    } else if (dd <= 7) {
+      ddText = '<span class="dday near">D-'+dd+'</span>';
+    } else if (dd <= 30) {
+      ddText = '<span class="dday soon">D-'+dd+'</span>';
+    } else {
+      ddText = '<span class="dday normal">D-'+dd+'</span>';
+    }
+
+    let typeBadge = e.type === '육아휴직'
+      ? '<span class="badge badge-pink">🤱 육아휴직</span>'
+      : '<span class="badge badge-teal">⏰ 단축근로</span>';
+
+    let statusBadge = status === '복직완료'
+      ? '<span class="badge badge-gray">복직완료</span>'
+      : status === '육아휴직'
+      ? '<span class="badge badge-pink">진행중</span>'
+      : '<span class="badge badge-teal">진행중</span>';
+
+    let wageInfo = '';
+    if (e.wage) {
+      if (e.type === '단축근로' && e.hours) {
+        const ratio = e.hours/40;
+        const actualWage = Math.round(e.wage * ratio / 10000) * 10000;
+        wageInfo = `<div style="font-size:12px;color:var(--text2)">${(actualWage/10000).toFixed(0)}만원/월</div>
+                    <div style="font-size:11px;color:var(--text3)">(${e.hours}h/주 기준)</div>`;
+      } else if (e.type === '육아휴직') {
+        const ins = Math.min(1500000, Math.round(e.wage * 0.8));
+        wageInfo = `<div style="font-size:12px;color:var(--text2)">고용보험 ${(ins/10000).toFixed(0)}만원</div>`;
+      }
+    }
+
+    return `<tr>
+      <td><strong>${e.name}</strong>${e.memo ? `<div style="font-size:11px;color:var(--text3);margin-top:2px">${e.memo}</div>` : ''}</td>
+      <td>${e.dept}</td>
+      <td>${typeBadge}</td>
+      <td style="font-size:13px">${formatDate(e.start)}</td>
+      <td style="font-size:13px">${formatDate(e.end)}</td>
+      <td>${ddText}</td>
+      <td>
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${e.type==='육아휴직'?'var(--accent2)':'var(--accent3)'};"></div></div>
+          <div class="progress-label">${used}일 / ${total}일 (${pct}%)</div>
+        </div>
+      </td>
+      <td>${e.age}</td>
+      <td>${wageInfo || '<span style="color:var(--text3);font-size:12px">미입력</span>'}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-sm" onclick="openModal('edit',${realIdx})">수정</button>
+          ${status !== '복직완료' ? `<button class="btn btn-success btn-sm" onclick="returnEmployee(${realIdx})">복직</button>` : ''}
+          <button class="btn btn-danger btn-sm" onclick="deleteEmployee(${realIdx})">삭제</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── 모달 ──
+function openModal(mode, idx=-1) {
+  editIdx = idx;
+  const isEdit = mode === 'edit';
+  document.getElementById('modal-icon').textContent = isEdit ? '✏️' : '👶';
+  document.getElementById('modal-title-text').textContent = isEdit ? '직원 정보 수정' : '직원 등록';
+
+  if (isEdit && idx >= 0) {
+    const e = employees[idx];
+    document.getElementById('f-name').value  = e.name;
+    document.getElementById('f-dept').value  = e.dept;
+    document.getElementById('f-type').value  = e.type;
+    document.getElementById('f-age').value   = e.age;
+    document.getElementById('f-start').value = e.start;
+    document.getElementById('f-end').value   = e.end;
+    document.getElementById('f-wage').value  = e.wage || '';
+    document.getElementById('f-hours').value = e.hours || '';
+    document.getElementById('f-memo').value  = e.memo || '';
+  } else {
+    ['f-name','f-dept','f-wage','f-hours','f-memo'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-type').value = '육아휴직';
+    document.getElementById('f-age').value  = '0세';
+    document.getElementById('f-start').value = '';
+    document.getElementById('f-end').value   = '';
+  }
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+  editIdx = -1;
+}
+
+function saveEmployee() {
+  const name  = document.getElementById('f-name').value.trim();
+  const dept  = document.getElementById('f-dept').value.trim();
+  const start = document.getElementById('f-start').value;
+  const end   = document.getElementById('f-end').value;
+  if (!name || !dept || !start || !end) { showToast('필수 항목을 입력하세요', 'error'); return; }
+
+  const emp = {
+    name, dept,
+    type:  document.getElementById('f-type').value,
+    age:   document.getElementById('f-age').value,
+    start, end,
+    wage:  parseInt(document.getElementById('f-wage').value) || 0,
+    hours: parseInt(document.getElementById('f-hours').value) || 0,
+    memo:  document.getElementById('f-memo').value,
+    status: document.getElementById('f-type').value,
+  };
+
+  if (editIdx >= 0) {
+    emp.status = employees[editIdx].status;
+    employees[editIdx] = emp;
+    showToast('수정되었습니다 ✓', 'success');
+  } else {
+    employees.push(emp);
+    showToast('등록되었습니다 ✓', 'success');
+  }
+  save(); render(); closeModal();
+}
+
+function deleteEmployee(idx) {
+  if (!confirm('삭제하시겠습니까?')) return;
+  employees.splice(idx, 1);
+  save(); render();
+  showToast('삭제되었습니다', 'success');
+}
+
+function returnEmployee(idx) {
+  if (!confirm('복직 처리하시겠습니까?')) return;
+  employees[idx].status = '복직완료';
+  save(); render();
+  showToast('복직 처리되었습니다 🎉', 'success');
+}
+
+// ── 급여 계산 ──
+function calcSalary() {
+  const wage   = parseInt(document.getElementById('c-wage').value) || 0;
+  const normal = parseInt(document.getElementById('c-normal').value) || 40;
+  const short  = parseInt(document.getElementById('c-short').value) || 0;
+  const type   = document.getElementById('c-type').value;
+
+  if (!wage) { document.getElementById('calc-result').style.display='none'; return; }
+  document.getElementById('calc-result').style.display='block';
+
+  if (type === 'leave') {
+    // 육아휴직
+    const ins = Math.min(1500000, Math.max(700000, Math.round(wage*0.8)));
+    document.getElementById('r-ratio').textContent   = '100% 휴직';
+    document.getElementById('r-hours').textContent   = '0시간';
+    document.getElementById('r-cut').textContent     = '-'+wage.toLocaleString()+'원';
+    document.getElementById('r-insurance').textContent = ins.toLocaleString()+'원 (고용보험)';
+    document.getElementById('r-total').textContent   = ins.toLocaleString()+'원';
+  } else {
+    // 단축근로
+    if (!short || short >= normal) { document.getElementById('calc-result').style.display='none'; return; }
+    const ratio = short / normal;
+    const cutHours = normal - short;
+    const cut = Math.round(wage * (1-ratio));
+    const actualWage = wage - cut;
+
+    // 고용보험: 단축 5시간까지 100%, 초과분 80%
+    const insHours = Math.min(5, cutHours);
+    const ins1 = Math.round((wage/normal) * insHours);
+    const ins2 = cutHours > 5 ? Math.round((wage/normal) * (cutHours-5) * 0.8) : 0;
+    const totalIns = Math.min(1500000, ins1+ins2);
+
+    document.getElementById('r-ratio').textContent   = Math.round(ratio*100)+'%';
+    document.getElementById('r-hours').textContent   = short+'시간/주 (단축 '+cutHours+'시간)';
+    document.getElementById('r-cut').textContent     = '-'+cut.toLocaleString()+'원';
+    document.getElementById('r-insurance').textContent = totalIns.toLocaleString()+'원 (고용보험)';
+    document.getElementById('r-total').textContent   = (actualWage+totalIns).toLocaleString()+'원';
+  }
+}
+
+// ── 거부사유 체크 ──
+function checkResult() {
+  const allowChecked = document.querySelectorAll('#allow-list input:checked').length;
+  const denyChecked  = document.querySelectorAll('#deny-list input:checked').length;
+
+  document.getElementById('result-allow').classList.remove('show');
+  document.getElementById('result-deny').classList.remove('show');
+
+  if (denyChecked > 0) {
+    document.getElementById('result-deny').classList.add('show');
+  } else if (allowChecked > 0) {
+    document.getElementById('result-allow').classList.add('show');
+  }
+
+  // 체크 아이템 스타일
+  document.querySelectorAll('.check-item').forEach(item=>{
+    item.classList.toggle('selected', item.querySelector('input').checked);
+  });
+}
+
+// ── 토스트 ──
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast '+type+' show';
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ── 오늘 날짜 ──
+document.getElementById('today-date').textContent =
+  new Date().toLocaleDateString('ko-KR', {year:'numeric',month:'long',day:'numeric',weekday:'short'});
+
+// 모달 외부 클릭 닫기
+document.getElementById('modal-overlay').addEventListener('click', function(e){
+  if (e.target === this) closeModal();
+});
+
+
+// ── SheetJS 엑셀 기능 ──
+
+// 현황 다운로드
+function downloadExcel() {
+  if (typeof XLSX === 'undefined') { showToast('라이브러리 로딩 중...', 'error'); return; }
+  const headers = ['성명','부서','유형','자녀나이','시작일','종료예정일','통상임금(월)','단축시간(주)','상태','메모'];
+  const rows = employees.map(e => [
+    e.name, e.dept, e.type, e.age, e.start, e.end,
+    e.wage || '', e.hours || '', e.status || e.type, e.memo || ''
+  ]);
+
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+  // 컬럼 너비
+  ws['!cols'] = [
+    {wch:10},{wch:12},{wch:14},{wch:10},{wch:12},{wch:12},
+    {wch:14},{wch:12},{wch:10},{wch:20}
+  ];
+
+  // 헤더 스타일 (배경색)
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let c = range.s.c; c <= range.e.c; c++) {
+    const cellAddr = XLSX.utils.encode_cell({r:0, c});
+    if (!ws[cellAddr]) continue;
+    ws[cellAddr].s = {
+      fill: { fgColor: { rgb: '1F497D' } },
+      font: { color: { rgb: 'FFFFFF' }, bold: true },
+      alignment: { horizontal: 'center' }
+    };
+  }
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '육아기 근로지원 현황');
+
+  const today = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `육아기근로지원_현황_${today}.xlsx`);
+  showToast('엑셀 다운로드 완료 ✓', 'success');
+}
+
+// 양식 다운로드
+function downloadTemplate() {
+  if (typeof XLSX === 'undefined') { showToast('라이브러리 로딩 중...', 'error'); return; }
+  const headers = ['성명','부서','유형','자녀나이','시작일','종료예정일','통상임금(월)','단축시간(주)','메모'];
+  const sample = [
+    ['홍길동','인사팀','육아휴직','1세','2025-01-01','2025-12-31',3000000,'',''],
+    ['김지영','개발팀','단축근로','3세','2025-03-01','2025-08-31',3500000,30,'주30시간 근무'],
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...sample]);
+  ws['!cols'] = [
+    {wch:10},{wch:12},{wch:14},{wch:10},{wch:12},{wch:12},
+    {wch:14},{wch:12},{wch:20}
+  ];
+
+  // 헤더 색상
+  for (let c = 0; c < headers.length; c++) {
+    const cellAddr = XLSX.utils.encode_cell({r:0, c});
+    if (!ws[cellAddr]) continue;
+    ws[cellAddr].s = {
+      fill: { fgColor: { rgb: '2E75B6' } },
+      font: { color: { rgb: 'FFFFFF' }, bold: true },
+      alignment: { horizontal: 'center' }
+    };
+  }
+
+  // 유형 셀 메모
+  ws['C2'] = { v: '육아휴직', t: 's' };
+  ws['C3'] = { v: '단축근로', t: 's' };
+
+  const note = XLSX.utils.aoa_to_sheet([
+    ['작성 안내'],
+    ['· 유형: 육아휴직 또는 단축근로'],
+    ['· 날짜: YYYY-MM-DD 형식'],
+    ['· 단축시간: 단축근로인 경우만 입력 (주 15~35시간)'],
+    ['· 통상임금: 월 기준 금액'],
+  ]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '입력양식');
+  XLSX.utils.book_append_sheet(wb, note, '작성안내');
+  XLSX.writeFile(wb, '육아기근로지원_입력양식.xlsx');
+  showToast('양식 다운로드 완료 ✓', 'success');
+}
+
+// 엑셀 업로드
+function uploadExcel(input) {
+  if (!input.files.length) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+
+      if (rows.length < 2) { showToast('데이터가 없습니다', 'error'); return; }
+
+      // 헤더 매핑
+      const header = rows[0].map(h => String(h).trim());
+      const nameIdx  = header.findIndex(h => h.includes('성명'));
+      const deptIdx  = header.findIndex(h => h.includes('부서'));
+      const typeIdx  = header.findIndex(h => h.includes('유형'));
+      const ageIdx   = header.findIndex(h => h.includes('자녀'));
+      const startIdx = header.findIndex(h => h.includes('시작'));
+      const endIdx   = header.findIndex(h => h.includes('종료'));
+      const wageIdx  = header.findIndex(h => h.includes('통상임금'));
+      const hoursIdx = header.findIndex(h => h.includes('단축시간'));
+      const memoIdx  = header.findIndex(h => h.includes('메모'));
+
+      if (nameIdx < 0 || deptIdx < 0) {
+        showToast('양식 형식이 맞지 않습니다', 'error'); return;
+      }
+
+      let added = 0;
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row[nameIdx]) continue;
+
+        // 날짜 변환 (엑셀 시리얼 → 문자열)
+        function toDateStr(val) {
+          if (!val) return '';
+          if (typeof val === 'number') {
+            const d = new Date((val - 25569) * 86400 * 1000);
+            return d.toISOString().slice(0,10);
+          }
+          return String(val).trim();
+        }
+
+        const emp = {
+          name:   String(row[nameIdx] || '').trim(),
+          dept:   String(row[deptIdx] || '').trim(),
+          type:   String(row[typeIdx] || '육아휴직').trim(),
+          age:    String(row[ageIdx]  || '').trim(),
+          start:  toDateStr(row[startIdx]),
+          end:    toDateStr(row[endIdx]),
+          wage:   parseInt(row[wageIdx]) || 0,
+          hours:  parseInt(row[hoursIdx]) || 0,
+          memo:   String(row[memoIdx] || '').trim(),
+          status: String(row[typeIdx] || '육아휴직').trim(),
+        };
+
+        if (emp.name && emp.start && emp.end) {
+          employees.push(emp); added++;
+        }
+      }
+
+      save(); render();
+      showToast(`${added}명 업로드 완료 ✓`, 'success');
+    } catch(err) {
+      showToast('파일 읽기 오류: ' + err.message, 'error');
+    }
+    input.value = '';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+
+// 초기 렌더
+render();
+</script>
+</body>
+</html>
